@@ -1,0 +1,5 @@
+* Counts how long the user button was held down (in ms)
+* Uses one free running counter plus EXTI as an ugly input capture
+* Uses another basic timer as a ms timer for printing tick tock messages
+11500@8n1 console on PA2 (tx only)
+

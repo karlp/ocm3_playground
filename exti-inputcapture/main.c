@@ -44,6 +44,7 @@ void clock_setup(void) {
     rcc_peripheral_enable_clock(&RCC_AHBENR, RCC_AHBENR_DMA1EN);
     // and timers...
     rcc_peripheral_enable_clock(&RCC_APB1ENR, RCC_APB1ENR_TIM6EN);
+    rcc_peripheral_enable_clock(&RCC_APB1ENR, RCC_APB1ENR_TIM7EN);
     /* Enable AFIO clock. */
     rcc_peripheral_enable_clock(&RCC_APB2ENR, RCC_APB2ENR_AFIOEN);
 }
@@ -88,8 +89,28 @@ int _write(int file, char *ptr, int len) {
 
 void BUTTON_DISCO_USER_isr(void) {
     exti_reset_request(BUTTON_DISCO_USER_EXTI);
-    // if rising, save timer count
-    // if falling, calc into state
+    if (state.falling) {
+        state.falling = false;
+        exti_set_trigger(BUTTON_DISCO_USER_EXTI, EXTI_TRIGGER_RISING);
+        ILOG("held: %d\n", TIM_CNT(TIM7));
+    } else {
+        TIM_CNT(TIM7) = 0;
+        state.falling = true;
+        exti_set_trigger(BUTTON_DISCO_USER_EXTI, EXTI_TRIGGER_FALLING);
+    }
+}
+
+void setup_buttons(void) {
+    /* Enable EXTI0 interrupt. */
+    nvic_enable_irq(NVIC_EXTI0_IRQ);
+
+    gpio_set_mode(BUTTON_DISCO_USER_PORT, GPIO_MODE_INPUT, GPIO_CNF_INPUT_FLOAT, BUTTON_DISCO_USER_PIN);
+
+    /* Configure the EXTI subsystem. */
+    exti_select_source(BUTTON_DISCO_USER_EXTI, BUTTON_DISCO_USER_PORT);
+    state.falling = false;
+    exti_set_trigger(BUTTON_DISCO_USER_EXTI, EXTI_TRIGGER_RISING);
+    exti_enable_request(BUTTON_DISCO_USER_EXTI);
 }
 
 static volatile int t6ovf = 0;
@@ -116,6 +137,14 @@ void setup_tim6(void) {
     timer_enable_counter(TIM6);
 }
 
+// Just free running please...
+void setup_tim7(void) {
+    timer_reset(TIM7);
+    timer_set_prescaler(TIM7, 23999); // 24Mhz/1000hz - 1
+    timer_set_period(TIM7, 0xffff);
+    timer_enable_counter(TIM7);
+}
+
 int main(void) {
 
     memset(&state, 0, sizeof (state));
@@ -124,6 +153,8 @@ int main(void) {
     usart_enable_all_pins();
     usart_console_setup();
     setup_tim6();
+    setup_tim7();
+    setup_buttons();
     while (1) {
         //__WFI();  // This breaks texane/stlink badly!
         ;

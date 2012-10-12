@@ -34,8 +34,7 @@ extern "C" {
 
 
     struct state_t {
-        unsigned long last_blink_time;
-        unsigned long last_dht_time;
+        bool falling;
         int bitcount;
     };
 
