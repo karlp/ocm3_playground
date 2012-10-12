@@ -1,0 +1,9 @@
+nbproject
+*.d
+*.o
+*.list
+*.srec
+*.elf
+*.map
+*.hex
+*.bin
