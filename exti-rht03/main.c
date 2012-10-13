@@ -18,7 +18,6 @@
 
 #include "syscfg.h"
 #include "nastylog.h"
-#include "ms_systick.h"
 
 __attribute__( ( always_inline ) ) static inline void __WFI(void)
 {
@@ -32,6 +31,33 @@ __attribute__( ( always_inline ) ) static inline void __WFI(void)
 
 static volatile struct state_t state;
 
+volatile uint64_t ksystick;
+
+uint64_t millis(void)
+{
+    return ksystick;
+}
+
+/**
+ * Busy loop for X ms USES INTERRUPTS
+ * @param ms
+ */
+void delay_ms(unsigned int ms) {
+    uint64_t now = millis();
+    while (millis() - ms < now) {
+        ;
+    }
+}
+
+void sys_tick_handler(void)
+{
+    ksystick++;
+    state.milliticks++;
+    if (state.milliticks >= 1000) {
+        state.milliticks = 0;
+        ILOG("Tick: %d\n", state.seconds++);
+    }
+}
 
 void clock_setup(void) {
     rcc_clock_setup_in_hsi_out_24mhz();
@@ -88,7 +114,6 @@ int _write(int file, char *ptr, int len) {
     return -1;
 }
 
-
 void RHT_isr(void) {
     exti_reset_request(RHT_EXTI);
     state.timings[state.bitcount++] = TIM7_CNT;
@@ -106,7 +131,6 @@ void setup_tim7(void) {
     timer_enable_irq(TIM7, TIM_DIER_UIE);
     timer_enable_counter(TIM7);
 }
-
 
 void start_rht_read(void) {
     // First, move the pins up and down to get it going...
@@ -126,15 +150,6 @@ void start_rht_read(void) {
     state.rht_timeout = false;
     setup_tim7();
     TIM_CNT(TIM7) = 0;
-}
-
-static volatile int t6ovf = 0;
-void tim6_isr(void) {
-    TIM_SR(TIM6) &= ~TIM_SR_UIF;
-    if (t6ovf++ > 1000) {
-        ILOG("TICK %d\n", state.seconds++);
-        t6ovf = 0;
-    }
 }
 
 void tim7_isr(void) {
@@ -160,23 +175,6 @@ void systick_setup(void) {
     systick_counter_enable();
 }
 
-/**
- * ms timer...
- */
-void setup_tim6(void) {
-    timer_reset(TIM6);
-    // 24Mhz / 10khz -1.
-    timer_set_prescaler(TIM6, 2399);  // 24Mhz/10000hz - 1
-    // 10khz for 10 ticks = 1 khz overflow = 1ms overflow interrupts
-    timer_set_period(TIM6, 10);
-    
-    nvic_enable_irq(NVIC_TIM6_IRQ);
-    //nvic_set_priority(NVIC_TIM&_IRQ, 1);
-    timer_enable_update_event(TIM6);  // default at reset!
-    timer_enable_irq(TIM6, TIM_DIER_UIE);
-    timer_enable_counter(TIM6);
-}
-
 void wait_for_shit(void) {
     while (1) {
         if (state.rht_timeout) {
@@ -198,7 +196,6 @@ int main(void) {
     usart_enable_all_pins();
     usart_console_setup();
     systick_setup();
-    setup_tim6();
     while (1) {
         if (state.seconds - state.last_start > 3) {
             state.last_start = state.seconds;

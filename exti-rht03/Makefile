@@ -6,7 +6,7 @@ V?=1
 # We use texane/stlink for flashing (via tcp)
 STLINK_PORT?=:4242
 BINARY=main
-OBJS+=ms_systick.o nastylog.o
+OBJS+=nastylog.o
 
 # When finalised, this will be the real board, not discovery
 #LDSCRIPT = stm32f100x8.ld

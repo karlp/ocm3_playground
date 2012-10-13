@@ -45,6 +45,7 @@ extern "C" {
         volatile int bitcount;
         volatile u16 timings[100];  // more than 40*2
         volatile bool rht_timeout;
+        volatile int milliticks;
     };
 
 
