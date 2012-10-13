@@ -1,0 +1,17 @@
+on stm32 with 5v io.
+solid 54-56uSec intervals for the "pre-bit" timings. (but stretches to 68 after a one bit?)
+solid 28usec for 0 bits
+solid 70-72~usec for 1 bits.
+solid 80usec low/high pair before bits.
+pullup to 3v for 22usec, then spike to 5v from pullup when we switch to float in.
+before almost instant pull down into the 80usec pre...
+seems perfectly suitable for us to count the falling edges...
+first falling is possibly when we are first pulled down for the ack
+if so, first falling is at very close to t0
+second falling then at ~160usec, third (first real bit) at 50usec+(28/60usec)
+if we don't catch the pull down,
+first falling is at ~¹60usec, then second (first real bit) at 50usec+(28/60)
+
+entire transfer is ~4ms from when we first pullup and release to when it idles high afterwards.
+
+so, once you're going, ~80usec is a 0, ~120usec is a 1.

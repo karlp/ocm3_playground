@@ -111,19 +111,17 @@ void setup_tim7(void) {
 void start_rht_read(void) {
     // First, move the pins up and down to get it going...
     gpio_set_mode(RHT_PORT, GPIO_MODE_OUTPUT_2_MHZ, GPIO_CNF_OUTPUT_PUSHPULL, RHT_PIN);
-    gpio_set(RHT_PORT, RHT_PIN);
-    delay_ms(250);
     gpio_clear(RHT_PORT, RHT_PIN);
-    delay_ms(20);
+    delay_ms(20); // docs say 1-10ms is enough....
     gpio_set(RHT_PORT, RHT_PIN);
     // want to wait for 40us here, but we're ok with letting some code delay us..
     state.bitcount = 0;
     memset(state.timings, 0, sizeof(state.timings));
-    
     nvic_enable_irq(RHT_NVIC);
+    // pull up will finish the job here for us.
     gpio_set_mode(RHT_PORT, GPIO_MODE_INPUT, GPIO_CNF_INPUT_FLOAT, RHT_PIN);
     exti_select_source(RHT_EXTI, RHT_PORT);
-    exti_set_trigger(RHT_EXTI, EXTI_TRIGGER_RISING);
+    exti_set_trigger(RHT_EXTI, EXTI_TRIGGER_FALLING);
     exti_enable_request(RHT_EXTI);
     state.rht_timeout = false;
     setup_tim7();
