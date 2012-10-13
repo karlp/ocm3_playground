@@ -15,3 +15,8 @@ first falling is at ~¹60usec, then second (first real bit) at 50usec+(28/60)
 entire transfer is ~4ms from when we first pullup and release to when it idles high afterwards.
 
 so, once you're going, ~80usec is a 0, ~120usec is a 1.
+
+with my current timer setup, I seem to get too many counts?
+I get a pretty steady 1913 counts for a the falling2falling edge of a 0, which should be 78usec or so.
+
+Which, funnily enough, is 1913/24.  Seems the tim7 prescaler isn't working :(
