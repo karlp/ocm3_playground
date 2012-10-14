@@ -29,7 +29,7 @@ __attribute__( ( always_inline ) ) static inline void __WFI(void)
 #define ILOG(format, args...)         nastylog(LOG_TAG ":INFO", format, ## args)
 #define WLOG(format, args...)         nastylog(LOG_TAG ":WARN", format, ## args)
 
-static volatile struct state_t state;
+static struct state_t volatile state;
 
 volatile uint64_t ksystick;
 
@@ -70,7 +70,6 @@ void clock_setup(void) {
     // oh, and dma!
     rcc_peripheral_enable_clock(&RCC_AHBENR, RCC_AHBENR_DMA1EN);
     // and timers...
-    rcc_peripheral_enable_clock(&RCC_APB1ENR, RCC_APB1ENR_TIM6EN);
     rcc_peripheral_enable_clock(&RCC_APB1ENR, RCC_APB1ENR_TIM7EN);
     /* Enable AFIO clock. */
     rcc_peripheral_enable_clock(&RCC_APB2ENR, RCC_APB2ENR_AFIOEN);

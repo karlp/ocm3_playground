@@ -40,12 +40,12 @@ extern "C" {
 
 
     struct state_t {
-        volatile int seconds;
+        int seconds;
         int last_start;
-        volatile int bitcount;
-        volatile u16 timings[100];  // more than 40*2
-        volatile bool rht_timeout;
-        volatile int milliticks;
+        int bitcount;
+        u16 timings[100];  // more than 40*2
+        bool rht_timeout;
+        int milliticks;
     };
 
 
