@@ -121,6 +121,7 @@ void RHT_isr(void) {
 
 // We want to count uSecs.  2^16 usecs should be a timeout on interrupt
 void setup_tim7(void) {
+#if ORIGINAL
     timer_reset(TIM7);
     timer_set_prescaler(TIM7, 23); // 24Mhz/1Mhz - 1
     timer_set_period(TIM7, 0xffff);
@@ -129,6 +130,15 @@ void setup_tim7(void) {
     timer_enable_update_event(TIM7);  // default at reset!
     timer_enable_irq(TIM7, TIM_DIER_UIE);
     timer_enable_counter(TIM7);
+#else
+    TIM7_CNT = 1;
+    timer_set_prescaler(TIM7, 23);
+    timer_set_period(TIM7, 0xfff0);
+    timer_clear_flag(TIM7, TIM_SR_UIF);
+    timer_enable_irq(TIM7, TIM_DIER_UIE);
+    nvic_enable_irq(NVIC_TIM7_IRQ);
+    timer_enable_counter(TIM7);
+#endif
 }
 
 void start_rht_read(void) {
@@ -148,16 +158,24 @@ void start_rht_read(void) {
     exti_enable_request(RHT_EXTI);
     state.rht_timeout = false;
     setup_tim7();
-    TIM_CNT(TIM7) = 0;
 }
 
 void tim7_isr(void) {
+#if ORIGINAL
     TIM_SR(TIM7) &= ~TIM_SR_UIF;
     state.rht_timeout = true;
     nvic_disable_irq(NVIC_TIM7_IRQ);
     //nvic_set_priority(NVIC_TIM&_IRQ, 1);
     timer_disable_irq(TIM7, TIM_DIER_UIE);
     timer_disable_counter(TIM7);
+#else
+    timer_disable_irq(TIM7, TIM_DIER_UIE);
+    timer_disable_counter(TIM7);
+    nvic_disable_irq(NVIC_TIM7_IRQ);
+    state.rht_timeout = true;
+    timer_clear_flag(TIM7, TIM_SR_UIF);
+#endif
+    
 }
 
 
