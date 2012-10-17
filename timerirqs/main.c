@@ -104,22 +104,23 @@ void setup_tim7(void) {
 //    timer_reset(TIM7);
     // 1ms ticks, 23999
     // 1usec ticks, 23
-    nvic_enable_irq(NVIC_TIM7_IRQ);
     TIM7_CNT = 1;
     TIM7_PSC = 23999;
     TIM7_ARR = 5000;
+    TIM7_SR &= ~TIM_SR_UIF;
     TIM7_DIER |= TIM_DIER_UIE;
+    nvic_enable_irq(NVIC_TIM7_IRQ);
     TIM7_CR1 |= TIM_CR1_CEN;
     ILOG("Starting oneshot!\n");
 }
 
 
 void tim7_isr(void) {
-    timer_clear_flag(TIM7, TIM_SR_UIF);
     timer_disable_irq(TIM7, TIM_DIER_UIE);
     timer_disable_counter(TIM7);
     nvic_disable_irq(NVIC_TIM7_IRQ);
     state.timed_out = true;
+    timer_clear_flag(TIM7, TIM_SR_UIF);
 }
 
 
@@ -138,6 +139,7 @@ int main(void) {
     clock_setup();
     setup_console();
     systick_setup();
+    setup_tim7();
     while (1) {
         if (state.seconds - state.last_start > 10) {
             state.last_start = state.seconds;
