@@ -105,12 +105,21 @@ void setup_tim7(void) {
     // 1ms ticks, 23999
     // 1usec ticks, 23
     TIM7_CNT = 1;
+#if 0
     TIM7_PSC = 23999;
     TIM7_ARR = 5000;
     TIM7_SR &= ~TIM_SR_UIF;
     TIM7_DIER |= TIM_DIER_UIE;
     nvic_enable_irq(NVIC_TIM7_IRQ);
     TIM7_CR1 |= TIM_CR1_CEN;
+#else
+    timer_set_prescaler(TIM7, 23999);
+    timer_set_period(TIM7, 5000);
+    timer_clear_flag(TIM7, TIM_SR_UIF);
+    timer_enable_irq(TIM7, TIM_DIER_UIE);
+    nvic_enable_irq(NVIC_TIM7_IRQ);
+    timer_enable_counter(TIM7);
+#endif
     ILOG("Starting oneshot!\n");
 }
 
