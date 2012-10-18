@@ -243,6 +243,11 @@ int main(void) {
                 ILOG("CHKSUM failed, ignoring: \n");
             }
             
+            int rh = (bb[0] << 8 | bb[1]);
+            int temp = (bb[2] << 8 | bb[3]);
+            ILOG("orig: temp = %d, rh = %d\n", temp, rh);
+            ILOG("Temp: %d.%d C, RH = %d.%d %%\n", temp / 10, temp % 10, rh / 10, rh % 10);
+            
         }
         //__WFI();  // This breaks texane/stlink badly!
         ;
