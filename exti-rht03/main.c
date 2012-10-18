@@ -147,7 +147,8 @@ void start_rht_read(void) {
     gpio_set(RHT_PORT, RHT_PIN);
     // want to wait for 40us here, but we're ok with letting some code delay us..
     state.bitcount = 0;
-    memset(state.timings, 0, sizeof(state.timings));
+    // don't need, let bitcount declare what's valid!
+    // memset(state.timings, 0, sizeof(state.timings));
     nvic_enable_irq(RHT_NVIC);
     // pull up will finish the job here for us.
     gpio_set_mode(RHT_PORT, GPIO_MODE_INPUT, GPIO_CNF_INPUT_FLOAT, RHT_PIN);
@@ -214,9 +215,6 @@ void stuff_bit(int bitnumber, int timing, uint8_t *bytes) {
 }
 
 int main(void) {
-
-    memset(&state, 0, sizeof (state));
-
     clock_setup();
     usart_enable_all_pins();
     usart_console_setup();
