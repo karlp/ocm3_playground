@@ -177,7 +177,7 @@ void wait_for_shit(void) {
             ILOG("timeout\n"); // eventually, we just go til we get all our bits
             return;
         }
-        if (state.bitcount > 115) {
+        if (state.bitcount > sizeof(state.timings)) {
             ILOG("too many bits!\n");
             return;
         }
@@ -207,7 +207,7 @@ int main(void) {
             // Start an rht03 reading...
             start_rht_read();
             wait_for_shit();
-            for (int i = 0; i < state.bitcount; i++)  {
+            for (unsigned i = 0; i < state.bitcount; i++)  {
                 ILOG("bit[%d] = %d\n", i, state.timings[i]);
             }
             uint8_t bb[5];

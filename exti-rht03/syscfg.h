@@ -42,7 +42,7 @@ extern "C" {
     struct state_t {
         int seconds;
         int last_start;
-        int bitcount;
+        unsigned bitcount;
         u16 timings[50];  // more than 40, but only by a few...
         bool rht_timeout;
         int milliticks;
