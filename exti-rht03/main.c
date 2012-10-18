@@ -219,6 +219,7 @@ int main(void) {
     usart_enable_all_pins();
     usart_console_setup();
     systick_setup();
+    setup_tim7();
     while (1) {
         if (state.seconds - state.last_start > 3) {
             state.last_start = state.seconds;
