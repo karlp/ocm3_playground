@@ -7,9 +7,7 @@
 #include <stdio.h>
 #include <unistd.h>
 #include <libopencm3/stm32/f1/rcc.h>
-#include <libopencm3/stm32/f1/flash.h>
 #include <libopencm3/stm32/f1/gpio.h>
-#include <libopencm3/stm32/f1/dma.h>
 #include <libopencm3/stm32/nvic.h>
 #include <libopencm3/stm32/exti.h>
 #include <libopencm3/stm32/usart.h>
@@ -205,6 +203,16 @@ void wait_for_shit(void) {
     }
 }
 
+void stuff_bit(int bitnumber, int timing, uint8_t *bytes) {
+    int byte_offset = bitnumber / 8;
+    int bit = 7 - (bitnumber % 8); // Stuff MSB first.
+    if (timing < 100) {
+        bytes[byte_offset] &= ~(1 << bit);
+    } else {
+        bytes[byte_offset] |= (1 << bit);
+    }
+}
+
 int main(void) {
 
     memset(&state, 0, sizeof (state));
@@ -223,6 +231,18 @@ int main(void) {
             for (int i = 0; i < state.bitcount; i++)  {
                 ILOG("bit[%d] = %d\n", i, state.timings[i]);
             }
+            uint8_t bb[5];
+            int base = state.bitcount - 40;
+            for (int i = 0; i < 40; i++) {
+                stuff_bit(i, state.timings[i + base], bb);
+            }
+            unsigned chksum = bb[0] + bb[1] + bb[2] + bb[3];
+            chksum &= 0xff;
+            DLOG("%x %x %x %x sum: %x == %x\n", bb[0], bb[1], bb[2], bb[3], chksum, bb[4]);
+            if (chksum != bb[4]) {
+                ILOG("CHKSUM failed, ignoring: \n");
+            }
+            
         }
         //__WFI();  // This breaks texane/stlink badly!
         ;
