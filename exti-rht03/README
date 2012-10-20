@@ -1,4 +1,5 @@
-* talks to an RHT03 on a five volt toleraant IO pin. 
-* Uses one free running counter plus EXTI as an ugly input capture
+* talks to an RHT03 on a five volt tolerant IO pin. 
+* Uses one free running counter plus EXTI as an ugly input capture.
+  (allows more options of where to route it)
 * 11500@8n1 console on PA2 (tx only)
 

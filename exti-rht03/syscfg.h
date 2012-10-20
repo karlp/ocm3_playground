@@ -43,7 +43,7 @@ extern "C" {
         int seconds;
         int last_start;
         unsigned bitcount;
-        u16 timings[50];  // more than 40, but only by a few...
+        uint8_t rht_bytes[5];
         bool rht_timeout;
         int milliticks;
     };
