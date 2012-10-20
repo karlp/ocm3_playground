@@ -62,11 +62,8 @@ void clock_setup(void) {
     /* Lots of things on all ports... */
     rcc_peripheral_enable_clock(&RCC_APB2ENR, RCC_APB2ENR_IOPAEN);
     rcc_peripheral_enable_clock(&RCC_APB2ENR, RCC_APB2ENR_IOPBEN);
-    rcc_peripheral_enable_clock(&RCC_APB2ENR, RCC_APB2ENR_IOPCEN);
 
     rcc_peripheral_enable_clock(&RCC_APB1ENR, RCC_APB1ENR_USART2EN);
-    // oh, and dma!
-    rcc_peripheral_enable_clock(&RCC_AHBENR, RCC_AHBENR_DMA1EN);
     // and timers...
     rcc_peripheral_enable_clock(&RCC_APB1ENR, RCC_APB1ENR_TIM7EN);
     /* Enable AFIO clock. */
@@ -114,7 +111,7 @@ int _write(int file, char *ptr, int len) {
 void stuff_bit(int bitnumber, int timing, volatile uint8_t *bytes) {
     int byte_offset = bitnumber / 8;
     int bit = 7 - (bitnumber % 8); // Stuff MSB first.
-    if (timing < 100) {
+    if (timing < RHT_LOW_HIGH_THRESHOLD) {
         bytes[byte_offset] &= ~(1 << bit);
     } else {
         bytes[byte_offset] |= (1 << bit);
@@ -127,7 +124,7 @@ void RHT_isr(void) {
     TIM7_CNT = 0;
     // Skip catching ourself pulsing the start line until the 150uS start.
     if (!state.seen_startbit) {
-        if (cnt < 100) {
+        if (cnt < RHT_LOW_HIGH_THRESHOLD) {
             return;
         } else {
             state.seen_startbit = true;
@@ -139,12 +136,15 @@ void RHT_isr(void) {
     state.bitcount++;
 }
 
-// We want to count uSecs.  2^16 usecs should be a timeout on interrupt
+/**
+ * We set this timer to count uSecs.
+ * The interrupt is only to indicate that it timed out and to shut itself off.
+ */
 void setup_tim7(void) {
     timer_clear_flag(TIM7, TIM_SR_UIF);
     TIM7_CNT = 1;
     timer_set_prescaler(TIM7, 23); // 24Mhz/1Mhz - 1
-    timer_set_period(TIM7, 0xfff0);
+    timer_set_period(TIM7, RHT_INTER_BIT_TIMEOUT_USEC);
     timer_enable_irq(TIM7, TIM_DIER_UIE);
     nvic_enable_irq(NVIC_TIM7_IRQ);
     timer_enable_counter(TIM7);
@@ -219,7 +219,9 @@ void loop_forever(void) {
         ILOG("All bits found!\n");
         unsigned chksum = state.rht_bytes[0] + state.rht_bytes[1] + state.rht_bytes[2] + state.rht_bytes[3];
         chksum &= 0xff;
-        DLOG("%x %x %x %x sum: %x == %x\n", state.rht_bytes[0], state.rht_bytes[1], state.rht_bytes[2], state.rht_bytes[3], chksum, state.rht_bytes[4]);
+        DLOG("%x %x %x %x sum: %x == %x\n", 
+            state.rht_bytes[0], state.rht_bytes[1], state.rht_bytes[2], state.rht_bytes[3],
+            chksum, state.rht_bytes[4]);
         if (chksum != state.rht_bytes[4]) {
             ILOG("CHKSUM failed, ignoring: \n");
             return;

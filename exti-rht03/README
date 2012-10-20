@@ -1,5 +1,8 @@
-* talks to an RHT03 on a five volt tolerant IO pin. 
+Status: working complete!
+
+* talks to an RHT03 on a five volt tolerant IO pin (edit syscfg.h to set the pin/port)
 * Uses one free running counter plus EXTI as an ugly input capture.
   (allows more options of where to route it)
 * 11500@8n1 console on PA2 (tx only)
+* Uses WFI to sleep between reads, average current consumption ~3.5mA.
 

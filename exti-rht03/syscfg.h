@@ -20,17 +20,9 @@ extern "C" {
 #define USART_CONSOLE USART2
 #define USE_NASTYLOG 1
 
-    // Discovery board LED is PC8 (blue led)
-#define LED_DISCO_GREEN_PORT GPIOC
-#define LED_DISCO_GREEN_PIN GPIO9
-#define LED_DISCO_BLUE_PORT GPIOC
-#define LED_DISCO_BLUE_PIN GPIO8
-
-#define BUTTON_DISCO_USER_PORT GPIOA
-#define BUTTON_DISCO_USER_PIN GPIO0
-#define BUTTON_DISCO_USER_EXTI EXTI0
-#define BUTTON_DISCO_USER_isr exti0_isr
-#define BUTTON_DISCO_USER_NVIC NVIC_EXTI0_IRQ
+#define RHT_INTER_BIT_TIMEOUT_USEC 500
+// Falling edge-falling edge times less than this are 0, else 1
+#define RHT_LOW_HIGH_THRESHOLD 100
 
 #define RHT_PORT GPIOB
 #define RHT_PIN GPIO9
