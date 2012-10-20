@@ -202,6 +202,7 @@ void wait_for_shit(void) {
         if (state.bitcount >= 40) {
             return;
         }
+        __WFI();
     }
 }
 
@@ -230,9 +231,8 @@ void loop_forever(void) {
         ILOG("Temp: %d.%d C, RH = %d.%d %%\n", temp / 10, temp % 10, rh / 10, rh % 10);
 
     }
-    //__WFI();  // This breaks texane/stlink badly!
-    ;
-    
+    // texane/stlink will have problems debugging through this.
+    __WFI();
 }
 
 int main(void) {
