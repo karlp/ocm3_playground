@@ -1,2 +1,4 @@
 This project is a playground for working with libopencm3.
 Most of the code is targetted at one of the various STM32 Discovery boards.
+
+Consider all code here to be licensed Apache 2, MIT, BSD 2 clause or ISC, at your preference.
