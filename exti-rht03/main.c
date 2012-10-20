@@ -159,6 +159,7 @@ void start_rht_read(void) {
     // want to wait for 40us here, but we're ok with letting some code delay us..
     state.bitcount = 0;
     state.seen_startbit = false;
+    state.rht_timeout = false;
     // don't need, let bitcount declare what's valid!
     // memset(state.timings, 0, sizeof(state.timings));
     nvic_enable_irq(RHT_NVIC);
@@ -167,7 +168,6 @@ void start_rht_read(void) {
     exti_select_source(RHT_EXTI, RHT_PORT);
     exti_set_trigger(RHT_EXTI, EXTI_TRIGGER_FALLING);
     exti_enable_request(RHT_EXTI);
-    state.rht_timeout = false;
     setup_tim7();
 }
 
@@ -197,14 +197,42 @@ void systick_setup(void) {
 void wait_for_shit(void) {
     while (1) {
         if (state.rht_timeout) {
-            ILOG("timeout\n"); // eventually, we just go til we get all our bits
             return;
         }
         if (state.bitcount >= 40) {
-            ILOG("All bits found!\n");
             return;
         }
     }
+}
+
+void loop_forever(void) {
+    if (state.seconds - state.last_start > 3) {
+        state.last_start = state.seconds;
+        ILOG("Start!\n");
+        start_rht_read();
+        wait_for_shit();
+        if (state.rht_timeout) {
+            ILOG("timeout\n");
+            return;
+        }
+        ILOG("All bits found!\n");
+        unsigned chksum = state.rht_bytes[0] + state.rht_bytes[1] + state.rht_bytes[2] + state.rht_bytes[3];
+        chksum &= 0xff;
+        DLOG("%x %x %x %x sum: %x == %x\n", state.rht_bytes[0], state.rht_bytes[1], state.rht_bytes[2], state.rht_bytes[3], chksum, state.rht_bytes[4]);
+        if (chksum != state.rht_bytes[4]) {
+            ILOG("CHKSUM failed, ignoring: \n");
+            return;
+        }
+
+        int rh = (state.rht_bytes[0] << 8 | state.rht_bytes[1]);
+        int temp = (state.rht_bytes[2] << 8 | state.rht_bytes[3]);
+        ILOG("orig: temp = %d, rh = %d\n", temp, rh);
+        ILOG("Temp: %d.%d C, RH = %d.%d %%\n", temp / 10, temp % 10, rh / 10, rh % 10);
+
+    }
+    //__WFI();  // This breaks texane/stlink badly!
+    ;
+    
 }
 
 int main(void) {
@@ -214,27 +242,7 @@ int main(void) {
     systick_setup();
     setup_tim7();
     while (1) {
-        if (state.seconds - state.last_start > 3) {
-            state.last_start = state.seconds;
-            ILOG("Start!\n");
-            // Start an rht03 reading...
-            start_rht_read();
-            wait_for_shit();
-            unsigned chksum = state.rht_bytes[0] + state.rht_bytes[1] + state.rht_bytes[2] + state.rht_bytes[3];
-            chksum &= 0xff;
-            DLOG("%x %x %x %x sum: %x == %x\n", state.rht_bytes[0], state.rht_bytes[1], state.rht_bytes[2], state.rht_bytes[3], chksum, state.rht_bytes[4]);
-            if (chksum != state.rht_bytes[4]) {
-                ILOG("CHKSUM failed, ignoring: \n");
-            }
-            
-            int rh = (state.rht_bytes[0] << 8 | state.rht_bytes[1]);
-            int temp = (state.rht_bytes[2] << 8 | state.rht_bytes[3]);
-            ILOG("orig: temp = %d, rh = %d\n", temp, rh);
-            ILOG("Temp: %d.%d C, RH = %d.%d %%\n", temp / 10, temp % 10, rh / 10, rh % 10);
-            
-        }
-        //__WFI();  // This breaks texane/stlink badly!
-        ;
+        loop_forever();
     }
 
     return 0;
