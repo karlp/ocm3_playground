@@ -6,3 +6,24 @@ Status: working complete!
 * 11500@8n1 console on PA2 (tx only)
 * Uses WFI to sleep between reads, average current consumption ~3.5mA.
 
+Example output (breathing on the device)
+
+main.c:INFO: Tick: 226
+main.c:INFO: Tick: 227
+main.c:INFO: Start!
+main.c:INFO: All bits found!
+main.c:DEBUG: 1 9b 0 d5 sum: 71 == 71
+main.c:INFO: orig: temp = 213, rh = 411
+main.c:INFO: Temp: 21.3 C, RH = 41.1 %
+main.c:INFO: Tick: 228
+main.c:INFO: Tick: 229
+main.c:INFO: Tick: 230
+main.c:INFO: Tick: 231
+main.c:INFO: Start!
+main.c:INFO: All bits found!
+main.c:DEBUG: 3 c 0 df sum: ee == ee
+main.c:INFO: orig: temp = 223, rh = 780
+main.c:INFO: Temp: 22.3 C, RH = 78.0 %
+main.c:INFO: Tick: 232
+main.c:INFO: Tick: 233
+
