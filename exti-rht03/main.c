@@ -123,11 +123,20 @@ void stuff_bit(int bitnumber, int timing, volatile uint8_t *bytes) {
 
 void RHT_isr(void) {
     exti_reset_request(RHT_EXTI);
-    if (state.bitcount > 2) {
-        stuff_bit(state.bitcount - 2, TIM7_CNT, state.rht_bytes);
+    int cnt = TIM7_CNT;
+    TIM7_CNT = 0;
+    // Skip catching ourself pulsing the start line until the 150uS start.
+    if (!state.seen_startbit) {
+        if (cnt < 100) {
+            return;
+        } else {
+            state.seen_startbit = true;
+        }
+    }
+    if (state.bitcount > 0) {  // but skip that start bit...
+        stuff_bit(state.bitcount - 1, cnt, state.rht_bytes);
     }
     state.bitcount++;
-    TIM7_CNT = 0;
 }
 
 // We want to count uSecs.  2^16 usecs should be a timeout on interrupt
@@ -149,6 +158,7 @@ void start_rht_read(void) {
     gpio_set(RHT_PORT, RHT_PIN);
     // want to wait for 40us here, but we're ok with letting some code delay us..
     state.bitcount = 0;
+    state.seen_startbit = false;
     // don't need, let bitcount declare what's valid!
     // memset(state.timings, 0, sizeof(state.timings));
     nvic_enable_irq(RHT_NVIC);
