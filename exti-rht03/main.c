@@ -190,6 +190,10 @@ void wait_for_shit(void) {
             ILOG("timeout\n"); // eventually, we just go til we get all our bits
             return;
         }
+        if (state.bitcount >= 40) {
+            ILOG("All bits found!\n");
+            return;
+        }
     }
 }
 
