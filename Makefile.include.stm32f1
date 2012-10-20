@@ -24,6 +24,7 @@ CC		= $(PREFIX)-gcc
 LD		= $(PREFIX)-gcc
 OBJCOPY		= $(PREFIX)-objcopy
 OBJDUMP		= $(PREFIX)-objdump
+SIZE		= $(PREFIX)-size
 GDB		= $(PREFIX)-gdb
 # If you are copying this file to use in your own project,
 # You will need to change this... (Leave unset to assume installed
@@ -103,6 +104,7 @@ else
 endif
 	@#printf "  LD      $(subst $(shell pwd)/,,$(@))\n"
 	$(Q)$(LD) -o $(*).elf $(OBJS) -lopencm3_stm32f1 $(LDFLAGS)
+	$(Q)$(SIZE) $(*).elf
 
 %.o: %.c Makefile
 	@#printf "  CC      $(subst $(shell pwd)/,,$(@))\n"
