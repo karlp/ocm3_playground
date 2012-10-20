@@ -1,10 +1,25 @@
+Reading RHT03 Temperature & Humidity Sensor with STM32 VL Discovery board.
+
 Status: working complete!
 
-* talks to an RHT03 on a five volt tolerant IO pin (edit syscfg.h to set the pin/port)
-* Uses one free running counter plus EXTI as an ugly input capture.
-  (allows more options of where to route it)
-* 11500@8n1 console on PA2 (tx only)
-* Uses WFI to sleep between reads, average current consumption ~3.5mA.
+This code works out of the box on an STM32VL Discovery board, with the RHT IO pin
+connected to PB9.  You need to use the 5V output to power the RHT03, as the
+Discovery Board's "3v3" output has a diode on it, and is only 3V, which is not
+enough for the RHT03 (Trust me, I've tried, repeatedly)
+
+The code uses a basic timer to count uSeconds, and EXTI as an ugly/cheap/flexible
+input capture module.  This means you can connect the RHT03 to basically any IO
+pin you like, rather than only something connected to an Input Capture on a timer.
+
+The code is interrupt driven, so while it is waiting for bits to arrive, it
+uses ARM's "WFI" instruction to go to sleep.  Current consumption measured on
+the Idd pins of the Discovery board indicate ~3.5mA current consumption.
+(was ~10.5 when using busy waiting)
+
+A console is output on PA2 @ 115200/8n1, displaying the count of seconds since boot,
+and the temperature and humidity as measured.
+
+RHT03 available from: https://www.sparkfun.com/products/10167
 
 Example output (breathing on the device)
 
