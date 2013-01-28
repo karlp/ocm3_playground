@@ -8,10 +8,10 @@
 #include <unistd.h>
 #include <libopencm3/stm32/f1/rcc.h>
 #include <libopencm3/stm32/f1/gpio.h>
-#include <libopencm3/stm32/nvic.h>
+#include <libopencm3/cm3/nvic.h>
 #include <libopencm3/stm32/exti.h>
 #include <libopencm3/stm32/usart.h>
-#include <libopencm3/stm32/systick.h>
+#include <libopencm3/cm3/systick.h>
 #include <libopencm3/stm32/timer.h>
 
 #include "syscfg.h"
@@ -239,9 +239,14 @@ void loop_forever(void) {
 
 int main(void) {
     clock_setup();
+    systick_setup();
     usart_enable_all_pins();
     usart_console_setup();
-    systick_setup();
+    printf("hello!\n");
+    // power up the RHT chip...
+    gpio_set_mode(GPIOA, GPIO_MODE_OUTPUT_50_MHZ, GPIO_CNF_OUTPUT_PUSHPULL, GPIO10);
+    gpio_set(GPIOA, GPIO10);
+    delay_ms(2000);
     setup_tim7();
     while (1) {
         loop_forever();

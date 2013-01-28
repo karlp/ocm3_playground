@@ -100,7 +100,7 @@ flash: $(BINARY).flash
 ifeq ($(OPENCM3_DIR),)
 %.elf: $(OBJS) 
 else
-%.elf: $(OBJS) $(LDSCRIPT) $(OPENCM3_DIR)/lib/stm32/f1/libopencm3_stm32f1.a
+%.elf: $(OBJS)# $(LDSCRIPT) $(OPENCM3_DIR)/lib/stm32/f1/libopencm3_stm32f1.a
 endif
 	@#printf "  LD      $(subst $(shell pwd)/,,$(@))\n"
 	$(Q)$(LD) -o $(*).elf $(OBJS) -lopencm3_stm32f1 $(LDFLAGS)

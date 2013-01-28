@@ -12,7 +12,7 @@ extern "C" {
 #endif
 
 #include <libopencm3/stm32/f1/gpio.h>
-#include <libopencm3/stm32/nvic.h>
+#include <libopencm3/cm3/nvic.h>
 #include <libopencm3/stm32/exti.h>
 #include <libopencm3/stm32/usart.h>
 
@@ -25,8 +25,8 @@ extern "C" {
 #define RHT_LOW_HIGH_THRESHOLD 100
 
 #define RHT_PORT GPIOB
-#define RHT_PIN GPIO9
-#define RHT_EXTI EXTI9
+#define RHT_PIN GPIO6
+#define RHT_EXTI EXTI6
 #define RHT_isr exti9_5_isr
 #define RHT_NVIC NVIC_EXTI9_5_IRQ
 
